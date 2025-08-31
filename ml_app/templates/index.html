@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Deep Fake Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS (optional for styling) -->
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="bg">
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-12 my-auto">
+          <div class="logo text-center mb-3">
+            <img src="{% static 'images/logo1.png' %}" alt="Logo">
+          </div>
+
+          {% if not video_processed %}
+          <!-- Upload Form Section -->
+          <video width="100%" controls id="videos" style="display: none;">
+            <source src="" id="video_source">
+            Your browser does not support HTML5 video.
+          </video>
+
+          <form method="POST" enctype="multipart/form-data" name="video-upload" id="video-upload" class="text-center mt-3 form">
+            {% csrf_token %}
+
+            <!-- Custom file input section -->
+            <div class="form-group">
+              <label for="videoInput">Upload Video:</label>
+              <input type="file" id="videoInput" name="upload_video_file" accept="video/*" style="display: none;">
+              <button type="button" id="chooseFileBtn" class="btn btn-primary">Choose Video</button>
+              <span id="fileName" class="ml-2 text-muted"></span>
+            </div>
+
+            <!-- Slider section -->
+            <div class="form-group">
+              <label for="sequence_length">Sequence Length:</label>
+              <span id="slider-value"></span>
+              <input type="number" hidden id="sequence_length" name="sequence_length">
+              <input type="range" id="custom-slider" min="0" max="5" value="0">
+              <!-- Error messages can be placed here if needed -->
+            </div>
+
+            <button id="videoUpload" type="submit" name="submit" class="btn btn-success mt-3 btn-block">Upload & Analyze</button>
+          </form>
+
+          {% else %}
+          <!-- Results Section -->
+          <div class="results-section">
+            <h2 class="text-center mb-4">Analysis Results</h2>
+            
+            <!-- Main Result -->
+            <div class="result text-center mb-4">
+              {% if output == "REAL" %}
+                <h3 class="mx-auto">Conclusion: <span style="color:green">{{output}}</span>
+                  <img src="{% static 'images/thumpup.png' %}" alt="real" height="80px" width="auto">
+                </h3>
+              {% else %}
+                <h3 class="mx-auto">Conclusion: <span style="color:red">{{output}}</span>
+                  <img src="{% static 'images/thumpdown.png' %}" alt="fake" height="80px" width="auto">
+                </h3>
+              {% endif %}
+              <h4>Overall Confidence: {{confidence}}%</h4>
+              <div class="mt-2">
+                <small class="text-muted">Mean: {{mean_confidence}}% | Std Dev: {{std_confidence}}%</small>
+              </div>
+            </div>
+
+            <!-- Confidence Analysis Section -->
+            <div class="mt-5">
+              <h3 class="text-center mb-4">Confidence Analysis</h3>
+              
+              <div class="row">
+                <!-- Histogram -->
+                <div class="col-md-6 mb-4">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0">Confidence Distribution (Histogram)</h5>
+                    </div>
+                    <div class="card-body text-center">
+                      {% if confidence_histogram %}
+                        <img src="{% static confidence_histogram %}" class="img-fluid" alt="Confidence Histogram" style="max-width: 100%; height: auto;">
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Line Graph -->
+                <div class="col-md-6 mb-4">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0">Frame-wise Confidence Trend</h5>
+                    </div>
+                    <div class="card-body text-center">
+                      {% if confidence_line_graph %}
+                        <img src="{% static confidence_line_graph %}" class="img-fluid" alt="Confidence Line Graph" style="max-width: 100%; height: auto;">
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Summary Statistics -->
+              <div class="row mt-3">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0">Statistical Summary</h5>
+                    </div>
+                    <div class="card-body">
+                      <div class="row text-center">
+                        <div class="col-md-3">
+                          <h6>Overall Confidence</h6>
+                          <span class="badge badge-{% if confidence > 80 %}success{% elif confidence > 60 %}warning{% else %}danger{% endif %} p-2">{{confidence}}%</span>
+                        </div>
+                        <div class="col-md-3">
+                          <h6>Mean Frame Confidence</h6>
+                          <span class="badge badge-info p-2">{{mean_confidence}}%</span>
+                        </div>
+                        <div class="col-md-3">
+                          <h6>Standard Deviation</h6>
+                          <span class="badge badge-secondary p-2">{{std_confidence}}%</span>
+                        </div>
+                        <div class="col-md-3">
+                          <h6>Total Frames</h6>
+                          <span class="badge badge-dark p-2">{{frame_confidences|length}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Analysis -->
+            <div class="row mt-4">
+              <!-- Frames Split -->
+              <div class="col-md-4">
+                <h5>Frames Split</h5>
+                <div id="preprocessed_images" class="mb-2">
+                  {% for each_image in preprocessed_images %}
+                  <img src="{% static each_image %}" class="img-thumbnail m-1" width="80" height="60" />
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Face Cropped Frames -->
+              <div class="col-md-4">
+                <h5>Face Cropped Frames</h5>
+                <div id="faces_images" class="mb-2">
+                  {% for each_image in faces_cropped_images %}
+                  <img src="{% static each_image %}" class="img-thumbnail m-1" width="60" height="60" />
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Heat Maps -->
+              <div class="col-md-4">
+                <h5>Heat Maps</h5>
+                <div id="heatmap_images" class="mb-2">
+                  {% for each_heatmap_image in heatmap_images %}
+                  <img src="{% static each_heatmap_image %}" class="img-thumbnail m-1" width="50" height="60" />
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <!-- New Analysis Button -->
+            <div class="text-center mt-4">
+              <a href="/" class="btn btn-primary btn-lg">Analyze Another Video</a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript section -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Slider logic
+      const slider = document.getElementById("custom-slider");
+      const valueDisplay = document.getElementById("slider-value");
+      const hiddenInput = document.getElementById("sequence_length");
+      const sliderSequenceNumbers = [10, 20, 40, 60, 80, 100];
+
+      function updateValue(index) {
+        const value = sliderSequenceNumbers[index];
+        hiddenInput.value = value;
+        valueDisplay.textContent = value;
+      }
+
+      slider.addEventListener("input", function () {
+        updateValue(parseInt(slider.value));
+      });
+
+      updateValue(parseInt(slider.value));
+      
+
+      // File upload logic
+      const videoInput = document.getElementById("videoInput");
+      const chooseBtn = document.getElementById("chooseFileBtn");
+      const fileNameLbl = document.getElementById("fileName");
+      const video = document.getElementById("videos");
+      const videoSource = document.getElementById("video_source");
+
+      chooseBtn.addEventListener("click", () => {
+        videoInput.click();
+      });
+
+      videoInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          videoSource.src = url;
+          video.load();
+          video.style.display = "block";
+          fileNameLbl.textContent = file.name;
+        } else {
+          video.style.display = "none";
+          fileNameLbl.textContent = "";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

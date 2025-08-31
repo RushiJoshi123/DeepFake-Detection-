@@ -1,0 +1,157 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  font-size: x-large;
+  color:black ; 
+  font-family: sans-serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+#slider-value{
+  color: black !important; 
+}
+#sequence_length {
+  color: black;
+}
+
+/* Background styling */
+.bg {
+  min-height: 100vh;
+  background: url("img1.jpg");
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  justify-content: center;
+  background-repeat: no-repeat;
+  padding: 50px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container */
+.container {
+  background: rgba(255, 255, 255, 0.15); /* semi-transparent white */
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+  width: 100%;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+
+/* Logo */
+.logo img {
+  max-width: 1200px;
+}
+
+/* Form styling */
+.form {
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.form-group input[type="file"] {
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 80px;
+  background-color:darkgray;
+  width: 100%;
+}   
+
+input[type="range"] {
+  width: 100%;
+  margin-top: 10px;
+}
+.nav-link{
+    text-decoration: none;
+    font-family: sans-serif
+  
+}
+.collapse navbar-collapse{
+    background-color: black;
+}
+
+#slider-value {
+  font-weight: bold;
+  margin-left: 10px;
+  color:black;
+
+
+}
+
+/* Video preview */
+video {
+  border-radius: 10px;
+  margin-top: 20px;
+  border: 1px solid #ccc;
+}
+
+/* Alert styling */
+.alert-danger {
+  font-size: 0.9rem;
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+
+/* Upload button */
+.btn-success {
+  background-color: blue;
+  border: none;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 8px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: darkblue;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .container {
+    padding: 30px 20px;
+  }
+
+  .form-group label {
+    font-size: 0.95rem;
+  }
+
+  .btn-success {
+    font-size: 0.95rem;
+  }
+}
